@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Platform Analytics - Secret Santa{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="mb-3">
+                <i class="bi bi-graph-up-arrow text-primary"></i> Platform Analytics
+            </h2>
+            <p class="text-muted">Complete platform statistics and insights</p>
+        </div>
+    </div>
+    
+    <!-- Overview Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h5><i class="bi bi-people"></i> Total Users</h5>
+                    <h2>{{ stats.total_users }}</h2>
+                    <small>Active: {{ stats.active_users }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h5><i class="bi bi-calendar-event"></i> Total Events</h5>
+                    <h2>{{ stats.total_events }}</h2>
+                    <small>Recent: {{ stats.recent_events }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h5><i class="bi bi-person-check"></i> Participants</h5>
+                    <h2>{{ stats.total_participants }}</h2>
+                    <small>Active users</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h5><i class="bi bi-gift"></i> Assignments</h5>
+                    <h2>{{ stats.total_assignments }}</h2>
+                    <small>Total pairs</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Events by Status</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="eventsStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Gift Status Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="giftStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-shield"></i> Privacy Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="privacyChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> User Growth (Last 7 Days)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="userGrowthChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Additional Stats -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-trophy"></i> Top Event Creators</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Name</th>
+                                <th>Events Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for creator in stats.top_creators %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ creator.name }}</td>
+                                <td><span class="badge bg-primary">{{ creator.event_count }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Events</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for event in stats.recent_events_list[:5] %}
+                        <a href="{{ url_for('events.view_event', event_id=event.event_id) }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="mb-1">{{ event.event_name }}</h6>
+                                    <small>{{ event.created_at.strftime('%b %d, %Y') if event.created_at else 'N/A' }}</small>
+                                </div>
+                                <span class="badge bg-{{ 'success' if event.status == 'active' else 'warning' }}">
+                                    {{ event.status|title }}
+                                </span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Summary Stats -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Platform Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h4 class="text-primary">{{ stats.total_wishlists }}</h4>
+                            <p class="text-muted">Wishlists Created</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-success">{{ stats.total_messages }}</h4>
+                            <p class="text-muted">Messages Sent</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-info">{{ "%.1f"|format((stats.total_assignments / stats.total_participants * 100) if stats.total_participants > 0 else 0) }}%</h4>
+                            <p class="text-muted">Assignment Rate</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-warning">{{ "%.1f"|format((stats.total_events / stats.total_users * 100) if stats.total_users > 0 else 0) }}%</h4>
+                            <p class="text-muted">Event Creation Rate</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Events by Status Chart
+const eventsStatusCtx = document.getElementById('eventsStatusChart').getContext('2d');
+new Chart(eventsStatusCtx, {
+    type: 'pie',
+    data: {
+        labels: {{ stats.events_by_status_labels|tojson }},
+        datasets: [{
+            data: {{ stats.events_by_status_data|tojson }},
+            backgroundColor: ['#28a745', '#007bff', '#6c757d', '#ffc107']
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true
+    }
+});
+
+// Gift Status Chart
+const giftStatusCtx = document.getElementById('giftStatusChart').getContext('2d');
+new Chart(giftStatusCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ stats.gift_status_labels|tojson }},
+        datasets: [{
+            label: 'Gift Status',
+            data: {{ stats.gift_status_data|tojson }},
+            backgroundColor: ['#ffc107', '#17a2b8', '#28a745']
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+
+// Privacy Chart
+const privacyCtx = document.getElementById('privacyChart').getContext('2d');
+new Chart(privacyCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ stats.privacy_labels|tojson }},
+        datasets: [{
+            data: {{ stats.privacy_data|tojson }},
+            backgroundColor: ['#28a745', '#ffc107']
+        }]
+    },
+    options: {
+        responsive: true
+    }
+});
+
+// User Growth Chart
+const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+new Chart(userGrowthCtx, {
+    type: 'line',
+    data: {
+        labels: {{ stats.user_growth|map(attribute='date')|list|tojson }},
+        datasets: [{
+            label: 'New Users',
+            data: {{ stats.user_growth|map(attribute='count')|list|tojson }},
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+</script>
+{% endblock %}

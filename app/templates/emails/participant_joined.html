@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #a8edea;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .info-box {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #a8edea;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>👤 New Participant Joined</h1>
+    </div>
+    <div class="content">
+        <p>Hello <strong>{{ admin.name }}</strong>,</p>
+        
+        <p>A new participant has joined your Secret Santa event <strong>"{{ event.event_name }}"</strong>!</p>
+        
+        <div class="info-box">
+            <h3>New Participant:</h3>
+            <p><strong>Name:</strong> {{ new_participant.user.name }}</p>
+            <p><strong>Email:</strong> {{ new_participant.user.email }}</p>
+            <p><strong>Joined:</strong> {{ new_participant.joined_at.strftime('%B %d, %Y at %I:%M %p') if new_participant.joined_at else 'Recently' }}</p>
+        </div>
+        
+        <p>Current participants: Check your event dashboard to see all participants.</p>
+        
+        <p style="text-align: center;">
+            <a href="{{ url_for('events.view_event', event_id=event.event_id, _external=True) }}" class="button">
+                View Event
+            </a>
+        </p>
+        
+        <div class="footer">
+            <p>This is an automated email from Secret Santa Platform.</p>
+        </div>
+    </div>
+</body>
+</html>

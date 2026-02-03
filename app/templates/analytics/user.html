@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}My Analytics - Secret Santa{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="mb-3">
+                <i class="bi bi-graph-up text-primary"></i> My Event Analytics
+            </h2>
+            <p class="text-muted">Statistics for events you created</p>
+        </div>
+    </div>
+    
+    <!-- Overview Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h5><i class="bi bi-calendar-event"></i> My Events</h5>
+                    <h2>{{ stats.total_events }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h5><i class="bi bi-people"></i> Total Participants</h5>
+                    <h2>{{ stats.total_participants }}</h2>
+                    <small>Avg: {{ "%.1f"|format(stats.avg_participants) }} per event</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h5><i class="bi bi-gift"></i> Assignments</h5>
+                    <h2>{{ stats.total_assignments }}</h2>
+                    <small>{{ "%.0f"|format(stats.assignment_rate) }}% completion</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h5><i class="bi bi-heart"></i> Wishlists</h5>
+                    <h2>{{ stats.total_wishlists }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Events by Status</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="eventsStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Gift Status</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="giftStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Events List -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-list-ul"></i> My Events</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Event Name</th>
+                                    <th>Status</th>
+                                    <th>Participants</th>
+                                    <th>Assignments</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in stats.user_events %}
+                                <tr>
+                                    <td>{{ event.event_name }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if event.status == 'active' else 'warning' if event.status == 'pending' else 'primary' if event.status == 'completed' else 'secondary' }}">
+                                            {{ event.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ event.participants.count() }}</td>
+                                    <td>{{ event.assignments.count() }}</td>
+                                    <td>{{ event.created_at.strftime('%b %d, %Y') if event.created_at else 'N/A' }}</td>
+                                    <td>
+                                        <a href="{{ url_for('analytics.event_analytics', event_id=event.event_id) }}" class="btn btn-sm btn-info">
+                                            <i class="bi bi-graph-up"></i> Analytics
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Events by Status Chart
+const eventsStatusCtx = document.getElementById('eventsStatusChart').getContext('2d');
+new Chart(eventsStatusCtx, {
+    type: 'pie',
+    data: {
+        labels: {{ stats.events_by_status_labels|tojson }},
+        datasets: [{
+            data: {{ stats.events_by_status_data|tojson }},
+            backgroundColor: ['#28a745', '#007bff', '#6c757d', '#ffc107']
+        }]
+    },
+    options: {
+        responsive: true
+    }
+});
+
+// Gift Status Chart
+const giftStatusCtx = document.getElementById('giftStatusChart').getContext('2d');
+new Chart(giftStatusCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ stats.gift_status_labels|tojson }},
+        datasets: [{
+            label: 'Gifts',
+            data: {{ stats.gift_status_data|tojson }},
+            backgroundColor: ['#ffc107', '#17a2b8', '#28a745']
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: { beginAtZero: true }
+        }
+    }
+});
+</script>
+{% endblock %}

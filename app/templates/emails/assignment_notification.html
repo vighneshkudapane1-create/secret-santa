@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #f5576c;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .info-box {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #f5576c;
+        }
+        .secret-box {
+            background: #fff3cd;
+            border: 2px dashed #ffc107;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎁 Your Secret Santa Assignment!</h1>
+    </div>
+    <div class="content">
+        <p>Hello <strong>{{ giver.name }}</strong>,</p>
+        
+        <p>Great news! Your Secret Santa assignment for <strong>"{{ event.event_name }}"</strong> has been generated!</p>
+        
+        <div class="secret-box">
+            <h2>🎯 Your Secret Santa Recipient:</h2>
+            <h1 style="color: #f5576c; margin: 10px 0;">{{ receiver.name }}</h1>
+            <p style="font-size: 14px; color: #666;">Keep this secret! 🤫</p>
+        </div>
+        
+        <div class="info-box">
+            <h3>Event Details:</h3>
+            <p><strong>Event:</strong> {{ event.event_name }}</p>
+            <p><strong>Budget:</strong> ₹{{ event.budget_min }} - ₹{{ event.budget_max }}</p>
+            {% if event.gift_deadline %}
+            <p><strong>Gift Deadline:</strong> {{ event.gift_deadline.strftime('%B %d, %Y at %I:%M %p') }}</p>
+            {% endif %}
+        </div>
+        
+        <p>What's next?</p>
+        <ul>
+            <li>View their wishlist to get gift ideas</li>
+            <li>Send them an anonymous message if you have questions</li>
+            <li>Update your gift status as you progress</li>
+        </ul>
+        
+        <p style="text-align: center;">
+            <a href="{{ url_for('events.view_event', event_id=event.event_id, _external=True) }}" class="button">
+                View Assignment
+            </a>
+        </p>
+        
+        <div class="footer">
+            <p>Remember: Keep your assignment secret! 🤫</p>
+            <p>This is an automated email from Secret Santa Platform.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Wishlist - {{ receiver.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-success">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-gift-fill"></i> Secret Santa Assignment
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <h5 class="mb-2">
+                            <i class="bi bi-person-check"></i> You are the Secret Santa for:
+                        </h5>
+                        <h3 class="mb-0">{{ receiver.name }}</h3>
+                    </div>
+                    
+                    {% if wishlist %}
+                    <div class="mt-4">
+                        <h5 class="mb-3">
+                            <i class="bi bi-heart-fill text-danger"></i> {{ receiver.name }}'s Wishlist
+                        </h5>
+                        
+                        {% if wishlist.gift_category %}
+                        <div class="mb-3">
+                            <strong><i class="bi bi-tags"></i> Preferred Category:</strong>
+                            <span class="badge bg-primary">{{ wishlist.gift_category }}</span>
+                        </div>
+                        {% endif %}
+                        
+                        {% if wishlist.preferences %}
+                        <div class="mb-3">
+                            <strong><i class="bi bi-heart text-danger"></i> Preferences / Likes:</strong>
+                            <p class="mt-2">{{ wishlist.preferences }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        {% if wishlist.dislikes %}
+                        <div class="mb-3">
+                            <strong><i class="bi bi-x-circle text-warning"></i> Dislikes / Avoid:</strong>
+                            <p class="mt-2">{{ wishlist.dislikes }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row mb-3">
+                            {% if wishlist.clothing_size %}
+                            <div class="col-md-6">
+                                <strong><i class="bi bi-person"></i> Clothing Size:</strong>
+                                <span class="badge bg-secondary">{{ wishlist.clothing_size }}</span>
+                            </div>
+                            {% endif %}
+                            {% if wishlist.color_preference %}
+                            <div class="col-md-6">
+                                <strong><i class="bi bi-palette"></i> Color Preference:</strong>
+                                <span>{{ wishlist.color_preference }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if wishlist.hobby_tags %}
+                        <div class="mb-3">
+                            <strong><i class="bi bi-star"></i> Hobbies / Interests:</strong>
+                            <div class="mt-2">
+                                {% for tag in wishlist.hobby_tags.split(',') %}
+                                <span class="badge bg-info me-1">{{ tag.strip() }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if wishlist.notes %}
+                        <div class="mb-3">
+                            <strong><i class="bi bi-card-text"></i> Additional Notes:</strong>
+                            <p class="mt-2">{{ wishlist.notes }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mt-4">
+                        <i class="bi bi-info-circle"></i> 
+                        {{ receiver.name }} hasn't added a wishlist yet. You can still surprise them with a thoughtful gift!
+                    </div>
+                    {% endif %}
+                    
+                    {% if event.gift_deadline %}
+                    <div class="alert alert-warning mt-4">
+                        <i class="bi bi-calendar-x"></i> 
+                        <strong>Gift Deadline:</strong> {{ event.gift_deadline.strftime('%B %d, %Y at %I:%M %p') }}
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-4">
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Gift Status:</strong></label>
+                            <select class="form-select" id="giftStatus" data-assignment-id="{{ assignment.assignment_id }}">
+                                <option value="pending" {% if assignment.gift_status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="purchased" {% if assignment.gift_status == 'purchased' %}selected{% endif %}>Purchased</option>
+                                <option value="delivered" {% if assignment.gift_status == 'delivered' %}selected{% endif %}>Delivered</option>
+                            </select>
+                        </div>
+                        <a href="{{ url_for('events.view_event', event_id=event.event_id) }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Event
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('giftStatus').addEventListener('change', function() {
+    const assignmentId = this.dataset.assignmentId;
+    const newStatus = this.value;
+    
+    fetch(`/gifts/assignment/${assignmentId}/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                ${data.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('.card-body').firstChild);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating status');
+    });
+});
+</script>
+{% endblock %}

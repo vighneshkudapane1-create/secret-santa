@@ -1,0 +1,136 @@
+📁 SECRET SANTA PROJECT - COMPLETE FOLDER STRUCTURE
+═══════════════════════════════════════════════════════════════
+
+secrete-santa/
+│
+├── 📄 README.md                          # Project documentation
+├── 📄 PROJECT_STRUCTURE.md               # Detailed structure documentation
+├── 📄 SETUP_INSTRUCTIONS.md              # Setup guide
+├── 📄 FOLDER_STRUCTURE.txt               # This file (visual structure)
+├── 📄 requirements.txt                   # Python dependencies
+├── 📄 config.py                          # Application configuration
+├── 📄 run.py                             # Application entry point
+├── 📄 .gitignore                         # Git ignore rules
+│
+├── 📁 app/                               # Main application package
+│   ├── 📄 __init__.py                    # Flask app factory & initialization
+│   ├── 📄 models.py                      # Database models (User, Event, etc.)
+│   │
+│   ├── 📁 routes/                        # Route blueprints
+│   │   ├── 📄 __init__.py
+│   │   ├── 📄 auth.py                    # Authentication (login, register, logout)
+│   │   ├── 📄 dashboard.py               # User dashboard routes
+│   │   ├── 📄 events.py                  # Event management routes
+│   │   ├── 📄 admin.py                   # Admin panel routes
+│   │   └── 📄 api.py                     # API endpoints
+│   │
+│   ├── 📁 utils/                         # Utility functions
+│   │   ├── 📄 __init__.py
+│   │   ├── 📄 assignment_engine.py       # Smart assignment algorithm
+│   │   ├── 📄 validators.py              # Form validation functions
+│   │   └── 📄 helpers.py                 # Helper utilities
+│   │
+│   └── 📁 templates/                     # Jinja2 HTML templates
+│       ├── 📄 base.html                  # Base template (navigation, footer)
+│       │
+│       ├── 📁 auth/                       # Authentication templates
+│       │   ├── 📄 login.html             # Login page
+│       │   └── 📄 register.html          # Registration page
+│       │
+│       ├── 📁 dashboard/                 # Dashboard templates
+│       │   ├── 📄 index.html             # Main dashboard
+│       │   └── 📄 profile.html           # User profile page
+│       │
+│       ├── 📁 events/                    # Event templates
+│       │   ├── 📄 list.html              # All events list
+│       │   ├── 📄 create.html            # Create event form
+│       │   ├── 📄 join.html              # Join event form
+│       │   └── 📄 view.html              # Event details page
+│       │
+│       ├── 📁 admin/                     # Admin templates
+│       │   └── 📄 event_dashboard.html   # Event management dashboard
+│       │
+│       └── 📁 errors/                    # Error pages
+│           ├── 📄 404.html               # 404 Not Found page
+│           └── 📄 500.html               # 500 Server Error page
+│
+└── 📁 static/                            # Static files (CSS, JS, images)
+    ├── 📁 css/
+    │   └── 📄 style.css                  # Custom CSS styles
+    │
+    ├── 📁 js/
+    │   └── 📄 main.js                    # Custom JavaScript
+    │
+    ├── 📁 images/                        # Image assets (create if needed)
+    │   └── (placeholder for images)
+    │
+    └── 📁 assets/                        # Other assets (create if needed)
+        └── (placeholder for fonts, etc.)
+
+═══════════════════════════════════════════════════════════════
+
+📊 STATISTICS:
+═══════════════════════════════════════════════════════════════
+
+Total Files Created: ~30+
+- Python Files: 12
+- HTML Templates: 11
+- CSS/JS Files: 2
+- Configuration Files: 4
+- Documentation Files: 4
+
+Main Features:
+✅ User Authentication (Register/Login/Logout)
+✅ Event Management (Create/Join/View)
+✅ Smart Assignment Algorithm
+✅ Admin Dashboard
+✅ Wishlist System (API ready)
+✅ Responsive Design
+✅ Modern UI with Animations
+
+═══════════════════════════════════════════════════════════════
+
+🔗 URL ROUTES:
+═══════════════════════════════════════════════════════════════
+
+/                           → Redirects to login/dashboard
+/auth/login                 → User login
+/auth/register              → User registration
+/auth/logout                → User logout
+/dashboard/                 → Main dashboard
+/dashboard/profile          → User profile
+/events/                    → List all events
+/events/create              → Create new event
+/events/join                → Join event by code
+/events/<id>                → View event details
+/admin/event/<id>           → Event management dashboard
+/admin/event/<id>/assign    → Trigger assignment (POST)
+/admin/event/<id>/reshuffle → Reshuffle assignments (POST)
+/api/wishlist               → Save wishlist (POST)
+
+═══════════════════════════════════════════════════════════════
+
+🗄️ DATABASE TABLES:
+═══════════════════════════════════════════════════════════════
+
+1. users          → User accounts
+2. events         → Secret Santa events
+3. participants   → Event participants
+4. wishlists      → User wishlists
+5. assignments    → Secret Santa pairings
+6. messages       → Anonymous messages
+
+═══════════════════════════════════════════════════════════════
+
+🎨 STYLING FEATURES:
+═══════════════════════════════════════════════════════════════
+
+- Modern gradient backgrounds
+- Smooth animations & transitions
+- Responsive design (mobile-friendly)
+- Bootstrap 5 components
+- Custom hover effects
+- Card-based layouts
+- Professional color scheme
+
+═══════════════════════════════════════════════════════════════

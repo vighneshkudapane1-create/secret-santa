@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Event Analytics - {{ stats.event.event_name }}{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="mb-3">
+                <i class="bi bi-graph-up-arrow text-primary"></i> Event Analytics
+            </h2>
+            <h4>{{ stats.event.event_name }}</h4>
+        </div>
+    </div>
+    
+    <!-- Key Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h5><i class="bi bi-people"></i> Participants</h5>
+                    <h2>{{ stats.total_participants }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h5><i class="bi bi-gift"></i> Assignments</h5>
+                    <h2>{{ stats.total_assignments }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h5><i class="bi bi-heart"></i> Wishlists</h5>
+                    <h2>{{ stats.total_wishlists }}</h2>
+                    <small>{{ "%.0f"|format(stats.wishlist_rate) }}% completion</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h5><i class="bi bi-envelope"></i> Messages</h5>
+                    <h2>{{ stats.total_messages }}</h2>
+                    <small>{{ stats.unread_messages }} unread</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Gift Status</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="giftStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Event Metrics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Average Compatibility Score:</strong>
+                        <div class="progress mt-2">
+                            {% set compat_percent = (stats.avg_compatibility * 100) if stats.avg_compatibility else 0 %}
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ compat_percent }}%">
+                                {{ "%.1f"|format(compat_percent) }}%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Wishlist Completion:</strong>
+                        <div class="progress mt-2">
+                            {% set wishlist_percent = stats.wishlist_rate if stats.wishlist_rate else 0 %}
+                            <div class="progress-bar bg-info" role="progressbar" 
+                                 style="width: {{ wishlist_percent }}%">
+                                {{ "%.0f"|format(wishlist_percent) }}%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Assignment Rate:</strong>
+                        <div class="progress mt-2">
+                            {% set assignment_percent = (stats.total_assignments / stats.total_participants * 100) if stats.total_participants > 0 else 0 %}
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: {{ assignment_percent }}%">
+                                {{ "%.0f"|format(assignment_percent) }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Participants Table -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-people"></i> Participant Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Joined</th>
+                                    <th>Wishlist</th>
+                                    <th>Gift Status</th>
+                                    <th>Compatibility</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in stats.participants_with_assignments %}
+                                {% set participant = item.participant %}
+                                {% set assignment = item.assignment %}
+                                <tr>
+                                    <td>{{ participant.user.name }}</td>
+                                    <td>{{ participant.joined_at.strftime('%b %d, %Y') if participant.joined_at else 'N/A' }}</td>
+                                    <td>
+                                        {% if participant.wishlist_id %}
+                                        <span class="badge bg-success">Yes</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if assignment %}
+                                        <span class="badge bg-{{ 'success' if assignment.gift_status == 'delivered' else 'info' if assignment.gift_status == 'purchased' else 'warning' }}">
+                                            {{ assignment.gift_status|title }}
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if assignment %}
+                                        {{ "%.1f"|format(assignment.compatibility_score * 100) }}%
+                                        {% else %}
+                                        N/A
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Gift Status Chart
+document.addEventListener('DOMContentLoaded', function() {
+    const giftStatusCtx = document.getElementById('giftStatusChart');
+    if (giftStatusCtx) {
+        const giftStatusChart = new Chart(giftStatusCtx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: {{ stats.gift_status_labels|tojson|safe }},
+                datasets: [{
+                    data: {{ stats.gift_status_data|tojson|safe }},
+                    backgroundColor: ['#ffc107', '#17a2b8', '#28a745']
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Manage {{ event.event_name }} - Secret Santa{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2 class="mb-3">
+                <i class="bi bi-gear-fill text-primary"></i> Event Management
+            </h2>
+            <h4>{{ event.event_name }}</h4>
+        </div>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5><i class="bi bi-people"></i> Participants</h5>
+                    <h2>{{ stats.total_participants }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5><i class="bi bi-check-circle"></i> Assignments</h5>
+                    <h2>{{ stats.assignments_done }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5><i class="bi bi-percent"></i> Progress</h5>
+                    <h2>{{ "%.0f"|format(stats.assignment_percentage) }}%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Assignment Actions -->
+    {% if not event.assignment_done %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-warning">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-shuffle"></i> Generate Secret Santa Assignments
+                    </h5>
+                    <p class="card-text">Once you trigger the assignment, participants will be randomly paired.</p>
+                    <button id="triggerAssignment" class="btn btn-primary btn-lg">
+                        <i class="bi bi-magic"></i> Generate Assignments
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-success">
+                <div class="card-body">
+                    <h5 class="card-title text-success">
+                        <i class="bi bi-check-circle-fill"></i> Assignments Generated
+                    </h5>
+                    <p class="card-text">Assignments have been completed. You can reshuffle if needed.</p>
+                    <button id="reshuffleAssignment" class="btn btn-warning">
+                        <i class="bi bi-arrow-repeat"></i> Reshuffle Assignments
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Analytics Link -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <h5 class="card-title">
+                        <i class="bi bi-graph-up-arrow"></i> Detailed Analytics
+                    </h5>
+                    <p class="card-text">View comprehensive statistics and charts for this event</p>
+                    <a href="{{ url_for('analytics.event_analytics', event_id=event.event_id) }}" class="btn btn-info">
+                        <i class="bi bi-bar-chart"></i> View Event Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Participants List -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ul"></i> Participants List
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for participant in participants %}
+                                <tr>
+                                    <td>{{ participant.user.name }}</td>
+                                    <td>{{ participant.user.email }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if participant.status == 'active' else 'secondary' }}">
+                                            {{ participant.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if event.assignment_done %}
+                                            {% set assignment = assignments|selectattr('giver_id', 'equalto', participant.participant_id)|first %}
+                                            {% if assignment %}
+                                                <span class="text-muted">Assigned to: {{ assignment.receiver.user.name }}</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('triggerAssignment')?.addEventListener('click', function() {
+    if (confirm('Are you sure you want to generate assignments? This action cannot be undone easily.')) {
+        fetch('{{ url_for("admin.trigger_assignment", event_id=event.event_id) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+});
+
+document.getElementById('reshuffleAssignment')?.addEventListener('click', function() {
+    if (confirm('Are you sure you want to reshuffle assignments? This will regenerate all pairings.')) {
+        fetch('{{ url_for("admin.reshuffle_assignments", event_id=event.event_id) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,19 @@
+"""
+Main entry point for Secret Santa Web Application
+"""
+from app import create_app
+import os
+
+# Get configuration from environment variable or use default
+config_name = os.environ.get('FLASK_ENV', 'development')
+
+app = create_app(config_name)
+
+if __name__ == '__main__':
+    # Render sets PORT env var; fallback to 5000 locally
+    port = int(os.environ.get('PORT', 5000))
+    app.run(
+        host='0.0.0.0',
+        port=port,
+        debug=True
+    )

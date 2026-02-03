@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Wishlist - {{ event.event_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-heart-fill"></i> My Wishlist - {{ event.event_name }}
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted mb-4">
+                        Help your Secret Santa by sharing your preferences and wishlist items!
+                    </p>
+                    
+                    <form method="POST" action="{{ url_for('wishlist.manage_wishlist', event_id=event.event_id) }}">
+                        <div class="mb-3">
+                            <label for="gift_category" class="form-label">
+                                <i class="bi bi-tags"></i> Gift Category Preference
+                            </label>
+                            <select class="form-select" id="gift_category" name="gift_category">
+                                <option value="">Select category...</option>
+                                <option value="Electronics" {% if wishlist and wishlist.gift_category == 'Electronics' %}selected{% endif %}>Electronics</option>
+                                <option value="Fashion" {% if wishlist and wishlist.gift_category == 'Fashion' %}selected{% endif %}>Fashion</option>
+                                <option value="Books" {% if wishlist and wishlist.gift_category == 'Books' %}selected{% endif %}>Books</option>
+                                <option value="Sports" {% if wishlist and wishlist.gift_category == 'Sports' %}selected{% endif %}>Sports & Fitness</option>
+                                <option value="Home & Kitchen" {% if wishlist and wishlist.gift_category == 'Home & Kitchen' %}selected{% endif %}>Home & Kitchen</option>
+                                <option value="Arts & Crafts" {% if wishlist and wishlist.gift_category == 'Arts & Crafts' %}selected{% endif %}>Arts & Crafts</option>
+                                <option value="Beauty & Personal Care" {% if wishlist and wishlist.gift_category == 'Beauty & Personal Care' %}selected{% endif %}>Beauty & Personal Care</option>
+                                <option value="Toys & Games" {% if wishlist and wishlist.gift_category == 'Toys & Games' %}selected{% endif %}>Toys & Games</option>
+                                <option value="Other" {% if wishlist and wishlist.gift_category == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="preferences" class="form-label">
+                                <i class="bi bi-heart"></i> Preferences / Things I Like
+                            </label>
+                            <textarea class="form-control" id="preferences" name="preferences" rows="3" 
+                                      placeholder="e.g., Books, Coffee, Gaming accessories, Tech gadgets...">{{ wishlist.preferences if wishlist else '' }}</textarea>
+                            <small class="form-text text-muted">List things you like or would appreciate as gifts</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="dislikes" class="form-label">
+                                <i class="bi bi-x-circle"></i> Dislikes / Things to Avoid
+                            </label>
+                            <textarea class="form-control" id="dislikes" name="dislikes" rows="2" 
+                                      placeholder="e.g., Perfume, Clothes, Food items...">{{ wishlist.dislikes if wishlist else '' }}</textarea>
+                            <small class="form-text text-muted">List things you don't like or prefer not to receive</small>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="clothing_size" class="form-label">
+                                    <i class="bi bi-person"></i> Clothing Size (if applicable)
+                                </label>
+                                <select class="form-select" id="clothing_size" name="clothing_size">
+                                    <option value="">Not applicable</option>
+                                    <option value="XS" {% if wishlist and wishlist.clothing_size == 'XS' %}selected{% endif %}>XS</option>
+                                    <option value="S" {% if wishlist and wishlist.clothing_size == 'S' %}selected{% endif %}>S</option>
+                                    <option value="M" {% if wishlist and wishlist.clothing_size == 'M' %}selected{% endif %}>M</option>
+                                    <option value="L" {% if wishlist and wishlist.clothing_size == 'L' %}selected{% endif %}>L</option>
+                                    <option value="XL" {% if wishlist and wishlist.clothing_size == 'XL' %}selected{% endif %}>XL</option>
+                                    <option value="XXL" {% if wishlist and wishlist.clothing_size == 'XXL' %}selected{% endif %}>XXL</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="color_preference" class="form-label">
+                                    <i class="bi bi-palette"></i> Color Preference
+                                </label>
+                                <input type="text" class="form-control" id="color_preference" name="color_preference" 
+                                       placeholder="e.g., Blue, Black, Red" value="{{ wishlist.color_preference if wishlist else '' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="hobby_tags" class="form-label">
+                                <i class="bi bi-star"></i> Hobbies / Interests
+                            </label>
+                            <input type="text" class="form-control" id="hobby_tags" name="hobby_tags" 
+                                   placeholder="e.g., Reading, Gaming, Cooking, Photography" 
+                                   value="{{ wishlist.hobby_tags if wishlist else '' }}">
+                            <small class="form-text text-muted">Comma-separated list of your hobbies</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">
+                                <i class="bi bi-card-text"></i> Additional Notes
+                            </label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                      placeholder="Any additional information that might help your Secret Santa...">{{ wishlist.notes if wishlist else '' }}</textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-info btn-lg">
+                                <i class="bi bi-check-circle"></i> Save Wishlist
+                            </button>
+                            <a href="{{ url_for('events.view_event', event_id=event.event_id) }}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Event
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

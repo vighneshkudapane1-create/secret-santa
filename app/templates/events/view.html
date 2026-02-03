@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.event_name }} - Secret Santa{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-gift"></i> {{ event.event_name }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if event.description %}
+                    <p class="card-text">{{ event.description }}</p>
+                    {% endif %}
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <p><strong><i class="bi bi-currency-rupee"></i> Budget:</strong> 
+                                ₹{{ event.budget_min }} - ₹{{ event.budget_max }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="bi bi-calendar"></i> Status:</strong> 
+                                <span class="badge bg-{{ 'success' if event.status == 'active' else 'warning' }}">
+                                    {{ event.status|title }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if event.gift_deadline %}
+                    <p><strong><i class="bi bi-calendar-x"></i> Gift Deadline:</strong> 
+                        {{ event.gift_deadline.strftime('%B %d, %Y at %I:%M %p') }}
+                    </p>
+                    {% endif %}
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <p><strong><i class="bi bi-shield-lock"></i> Privacy:</strong> 
+                                <span class="badge bg-{{ 'success' if event.privacy_type == 'public' else 'warning' }}">
+                                    {{ event.privacy_type|title }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong><i class="bi bi-eye"></i> Visibility:</strong> 
+                                <span class="badge bg-info">{{ event.visibility|replace('_', ' ')|title }}</span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {% if is_admin %}
+                    <div class="mt-3">
+                        <p><strong><i class="bi bi-key"></i> Invite Code:</strong> 
+                            <code class="fs-5">{{ event.invite_code }}</code>
+                        </p>
+                        <p class="text-muted small">
+                            <i class="bi bi-info-circle"></i> 
+                            {% if event.allow_public_join %}
+                                Anyone with this code can join
+                            {% else %}
+                                Only you can add participants (private event)
+                            {% endif %}
+                        </p>
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('admin.event_dashboard', event_id=event.event_id) }}" class="btn btn-primary">
+                                <i class="bi bi-gear"></i> Manage Event
+                            </a>
+                            <a href="{{ url_for('events.edit_event', event_id=event.event_id) }}" class="btn btn-warning">
+                                <i class="bi bi-pencil-square"></i> Edit Event
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Event Actions (Admin Only) -->
+                    {% if is_admin or current_user.role == 'super_admin' %}
+                    <div class="card border-danger mt-4">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">
+                                <i class="bi bi-exclamation-triangle"></i> Event Actions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <h6>End Event</h6>
+                                    <p class="text-muted small">Mark event as completed or cancelled</p>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-success btn-sm" onclick="endEvent('completed')">
+                                            <i class="bi bi-check-circle"></i> Mark Completed
+                                        </button>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="endEvent('cancelled')">
+                                            <i class="bi bi-x-circle"></i> Mark Cancelled
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <h6>Delete Event</h6>
+                                    <p class="text-muted small">Permanently delete this event (cannot be undone)</p>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteEvent()">
+                                        <i class="bi bi-trash"></i> Delete Event
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if participant %}
+                    <div class="mt-3">
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('wishlist.manage_wishlist', event_id=event.event_id) }}" class="btn btn-info">
+                                <i class="bi bi-heart-fill"></i> 
+                                {% if participant.wishlist_id %}Edit{% else %}Add{% endif %} My Wishlist
+                            </a>
+                            {% if assignment %}
+                            <a href="{{ url_for('messages.view_messages', event_id=event.event_id) }}" class="btn btn-primary">
+                                <i class="bi bi-chat-dots"></i> Open Chat
+                            </a>
+                            {% endif %}
+                            <a href="{{ url_for('messages.view_messages', event_id=event.event_id) }}" class="btn btn-secondary">
+                                <i class="bi bi-inbox"></i> Messages
+                                {% set unread = received_messages|selectattr('is_read', 'equalto', False)|list|length if received_messages else 0 %}
+                                {% if unread > 0 %}
+                                <span class="badge bg-danger">{{ unread }}</span>
+                                {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Assignment Card -->
+            {% if assignment %}
+            <div class="card border-success shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-gift-fill"></i> Your Secret Santa Assignment
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h4 class="text-success">{{ assignment.receiver.user.name }}</h4>
+                    <p class="text-muted">You are the Secret Santa for this person!</p>
+                    {% if assignment.event.gift_deadline %}
+                    <p><i class="bi bi-calendar-x"></i> 
+                        <strong>Deadline:</strong> {{ assignment.event.gift_deadline.strftime('%B %d, %Y') }}
+                    </p>
+                    {% endif %}
+                    <div class="mt-3">
+                        <a href="{{ url_for('wishlist.view_wishlist', event_id=event.event_id, user_id=assignment.receiver.user.user_id) }}" 
+                           class="btn btn-success">
+                            <i class="bi bi-heart-fill"></i> View Their Wishlist
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% elif participant and event.assignment_done %}
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle"></i> Assignment not found. Please contact admin.
+            </div>
+            {% elif participant %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Assignment will be revealed once the admin triggers it.
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people"></i> Participants ({{ participants|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for p in participants %}
+                        <li class="list-group-item">
+                            <i class="bi bi-person-circle"></i> {{ p.user.name }}
+                            {% if p.user_id == current_user.user_id %}
+                                <span class="badge bg-primary">You</span>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function endEvent(status) {
+    const statusText = status === 'completed' ? 'completed' : 'cancelled';
+    if (!confirm(`Are you sure you want to mark this event as ${statusText}?`)) {
+        return;
+    }
+    
+    fetch('{{ url_for("events.end_event", event_id=event.event_id) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: status })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred');
+    });
+}
+
+function deleteEvent() {
+    if (!confirm('Are you sure you want to DELETE this event?\n\nThis action cannot be undone!\n\nAll participants, assignments, and data will be permanently deleted.')) {
+        return;
+    }
+    
+    if (!confirm('This is your final warning. Are you absolutely sure?')) {
+        return;
+    }
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{{ url_for("events.delete_event", event_id=event.event_id) }}';
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+{% endblock %}

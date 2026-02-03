@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Messages - {{ event.event_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-envelope-fill"></i> Messages - {{ event.event_name }}
+                    </h4>
+                    {% if unread_count > 0 %}
+                    <span class="badge bg-warning text-dark">
+                        {{ unread_count }} unread
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if assignment %}
+                    <div class="alert alert-info mb-4">
+                        <h6><i class="bi bi-info-circle"></i> Anonymous Messaging</h6>
+                        <p class="mb-2">You can send anonymous messages to your Secret Santa recipient.</p>
+                        <a href="{{ url_for('messages.send_message', event_id=event.event_id) }}" class="btn btn-info btn-sm">
+                            <i class="bi bi-send"></i> Send Message
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if received_messages %}
+                    <h5 class="mb-3">Received Messages</h5>
+                    <div class="list-group">
+                        {% for msg in received_messages %}
+                        <div class="list-group-item {% if not msg.is_read %}border-start border-primary border-3{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <div class="mb-2">
+                                        <span class="badge bg-secondary">
+                                            <i class="bi bi-person-fill"></i> Anonymous
+                                        </span>
+                                        {% if not msg.is_read %}
+                                        <span class="badge bg-primary">New</span>
+                                        {% endif %}
+                                        <small class="text-muted ms-2">
+                                            <i class="bi bi-clock"></i> {{ msg.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                        </small>
+                                    </div>
+                                    <p class="mb-2">{{ msg.message_text }}</p>
+                                </div>
+                                <div class="ms-3">
+                                    {% if not msg.is_read %}
+                                    <button class="btn btn-sm btn-outline-primary" onclick="markRead({{ msg.message_id }})">
+                                        <i class="bi bi-check"></i> Mark Read
+                                    </button>
+                                    {% endif %}
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteMessage({{ msg.message_id }})">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No messages received yet.
+                        {% if assignment %}
+                        <a href="{{ url_for('messages.send_message', event_id=event.event_id) }}" class="alert-link">Send your first message!</a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> About Messages
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="small">
+                        <strong>Anonymous Messaging:</strong><br>
+                        Messages are sent anonymously. The receiver won't know who sent the message.
+                    </p>
+                    <p class="small">
+                        <strong>Who can message:</strong><br>
+                        Only participants with assignments can send messages to their Secret Santa recipient.
+                    </p>
+                    <p class="small">
+                        <strong>Privacy:</strong><br>
+                        Messages are only visible to the receiver. They can be deleted at any time.
+                    </p>
+                    {% if assignment %}
+                    <a href="{{ url_for('messages.send_message', event_id=event.event_id) }}" class="btn btn-info btn-sm w-100 mt-2">
+                        <i class="bi bi-send"></i> Send Message
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function markRead(messageId) {
+    fetch(`/messages/message/${messageId}/read`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred');
+    });
+}
+
+function deleteMessage(messageId) {
+    if (!confirm('Are you sure you want to delete this message?')) {
+        return;
+    }
+    
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/messages/message/${messageId}/delete`;
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+{% endblock %}
