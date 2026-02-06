@@ -9,7 +9,7 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'your-secret-key-change-this-in-production'
     
     # Database configuration
-    MYSQL_HOST = os.environ.get('MYSQL_HOST') or 'localhost'
+    MYSQL_HOST = os.environ.get('MYSQL_HOST') or 'localhost'    
     MYSQL_USER = os.environ.get('MYSQL_USER') or 'root'
     MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD') or ''
     MYSQL_DB = os.environ.get('MYSQL_DB') or 'secret_santa_db'
@@ -40,9 +40,9 @@ class Config:
     MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.gmail.com'
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 587)
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
-    # DEVELOPMENT ONLY: direct Gmail credentials so SMTP authenticate होईल
-    MAIL_USERNAME = 'secret.santa.4034@gmail.com'
-    MAIL_PASSWORD = 'hqsr fujl psil wrde'
+    # SMTP credentials - must be provided via environment variables in production
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'your-email@example.com'
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or 'change-this-password'
 
 class DevelopmentConfig(Config):
     """Development configuration"""
