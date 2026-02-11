@@ -9,7 +9,6 @@ PyMySQL==1.1.0
 cryptography==41.0.7
 python-dotenv==1.0.0
 email-validator==2.1.0
-gunicorn==20.1.0
 psycopg2-binary==2.9.6
-gunicorn
-psycopg2-binary
+gunicorn==21.2.0
+setuptools>=70.0.0
