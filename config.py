@@ -18,9 +18,9 @@ class Config:
     # Render / cloud-friendly: prefer DATABASE_URL if present (e.g. PostgreSQL on Render)
     DATABASE_URL = os.environ.get('DATABASE_URL')
     if DATABASE_URL:
-        # For psycopg (v3), use postgresql+psycopg:// dialect
+        # For psycopg2-binary, use postgresql+psycopg2:// dialect
         if DATABASE_URL.startswith('postgresql://'):
-            DATABASE_URL = DATABASE_URL.replace('postgresql://', 'postgresql+psycopg://', 1)
+            DATABASE_URL = DATABASE_URL.replace('postgresql://', 'postgresql+psycopg2://', 1)
         SQLALCHEMY_DATABASE_URI = DATABASE_URL
     else:
         SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DB}'
